@@ -4,7 +4,7 @@ module.exports = { areDateShifted, areDataDifferent, refactorCountryKeys };
 
 
 /**
- * If Italy daily cases are not null before 17 UTC, it means that all countries data are referring to yesterday
+ * If Italy daily cases are not null before 15 UTC, it means that all countries data are referring to yesterday
  * (because Italy updates data about at 17 local time)
  *
  * @returns {Promise<boolean>}
@@ -16,7 +16,7 @@ async function areDateShifted() {
     // 00:11 UTC because Worldometers updates data at 00:00 UTC, but APIs refreshes data every 10 minutes
     const now = new Date();
 
-    return italyData.data.todayCases !== null && now.getUTCHours() < 17;
+    return italyData.data.todayCases !== null && now.getUTCHours() < 15;
 }
 
 
