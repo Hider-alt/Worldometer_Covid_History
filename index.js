@@ -56,7 +56,7 @@ const Covid = mongoose.model('histories', covidSchema);
 
 // -- Routes --
 
-app.get('/countries', async (req, res) => {
+app.get('/api/countries', async (req, res) => {
     const countries = await Covid.find({}, {_id: 0, country: 1});
 
     // Transform list of countries to array
@@ -68,7 +68,7 @@ app.get('/countries', async (req, res) => {
 });
 
 
-app.get('/history/all', async (req, res) => {
+app.get('/api/history/all', async (req, res) => {
     const last_days = req.query["lastDays"];
 
     let projection = {_id: 0, __v: 0, country: 1, history: {$slice: -last_days}};
@@ -82,7 +82,7 @@ app.get('/history/all', async (req, res) => {
 });
 
 
-app.get('/history/:country', async (req, res) => {
+app.get('/api/history/:country', async (req, res) => {
     const last_days = req.query["lastDays"];
     const country = req.params.country;
 
@@ -101,7 +101,7 @@ app.get('/history/:country', async (req, res) => {
 })
 
 
-app.get('/history/:country/:key', async (req, res) => {
+app.get('/api/history/:country/:key', async (req, res) => {
     // Returns an array of objects containing date and custom key specified in the request
 
     const country = req.params.country;
@@ -132,7 +132,7 @@ app.get('/history/:country/:key', async (req, res) => {
 });
 
 
-app.get('/countries/:country/info', async (req, res) => {
+app.get('/api/countries/:country/info', async (req, res) => {
     const country = req.params.country;
     const data = await findCountry(country, {_id: 0, __v: 0, history: 0});
 
