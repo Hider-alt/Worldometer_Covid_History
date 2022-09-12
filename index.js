@@ -1,7 +1,7 @@
 // Store Worldometer Covid data to MongoDB
 
 require('dotenv').config();
-const { areDateShifted, areDataDifferent, refactorCountryKeys } = require('./utils.js')
+const { areDateShifted, areDataDifferent, refactorCountryKeys, addDailyTests } = require('./utils.js')
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -13,41 +13,42 @@ const app = express();
 app.use(express.json());
 
 // Connecting to MongoDB
-mongoose.connect(process.env.DB_URL, {useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect(process.env.DB_URL, {useUnifiedTopology: true})
 
 // Creating schema
 const covidSchema = new mongoose.Schema({
     country: String,
     countryInfo: {
-        "iso2": String,
-        "iso3": String,
-        "lat": Number,
-        "long": Number,
-        "flag": String
+        iso2: String,
+        iso3: String,
+        lat: Number,
+        long: Number,
+        flag: String
     },
     history: [{
         _id: false,
-        "date": String,
-        "cases": Number,
-        "dailyCases": Number,
-        "deaths": Number,
-        "dailyDeaths": Number,
-        "recovered": Number,
-        "dailyRecovered": Number,
-        "active": Number,
-        "critical": Number,
-        "casesPerOneMillion": Number,
-        "deathsPerOneMillion": Number,
-        "tests": Number,
-        "testsPerOneMillion": Number,
-        "population": Number,
-        "continent": Number,
-        "oneCasePerPeople": Number,
-        "oneDeathPerPeople": Number,
-        "oneTestPerPeople": Number,
-        "activePerOneMillion": Number,
-        "recoveredPerOneMillion": Number,
-        "criticalPerOneMillion": Number
+        date: String,
+        cases: Number,
+        dailyCases: Number,
+        deaths: Number,
+        dailyDeaths: Number,
+        recovered: Number,
+        dailyRecovered: Number,
+        active: Number,
+        critical: Number,
+        casesPerOneMillion: Number,
+        deathsPerOneMillion: Number,
+        dailyTests: Number,
+        tests: Number,
+        testsPerOneMillion: Number,
+        population: Number,
+        continent: Number,
+        oneCasePerPeople: Number,
+        oneDeathPerPeople: Number,
+        oneTestPerPeople: Number,
+        activePerOneMillion: Number,
+        recoveredPerOneMillion: Number,
+        criticalPerOneMillion: Number
     }]
 });
 
@@ -210,20 +211,30 @@ async function updateCountries() {
     await updateCountryDay(`&yesterday=true`, yesterday);
     await updateCountryDay('', today);
 
-    console.log("Update finished");
+    const nextUpdate = new Date(now.getTime() + 10 * 60 * 1000);
+    console.log(`Update finished. New update will be at ${nextUpdate.toISOString()}`);
 }
 
 
 async function updateCountryDay(apiQuery, date) {
+    let yesterday = new Date(date);
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday = yesterday.toISOString().split('T')[0];
+
     const url = `https://disease.sh/v3/covid-19/countries?allowNull=true${apiQuery}`;
     const countriesRequest = await axios.get(url);
     const countriesDB = await Covid.find({"history.date": date}, {_id: 0, country: 1, "history.$": 1}).exec();
+    const yesterdayDB = await Covid.find({"history.date": yesterday}, {_id: 0, country: 1, "history.$": 1}).exec();
 
     for (const country of countriesRequest.data) {
         const countryName = country.country;
-        refactorCountryKeys(country, date);
-
         let countryDB = countriesDB.find(c => c.country === countryName);
+        const yesterdayCountryDB = yesterdayDB.find(c => c.country === countryName);
+
+        refactorCountryKeys(country, date);
+        if (yesterdayCountryDB !== undefined) {
+            addDailyTests(country, yesterdayCountryDB['history'][0]);
+        }
 
         // If today data is not in db, then insert it
         if (!countryDB) {

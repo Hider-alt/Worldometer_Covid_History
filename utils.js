@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-module.exports = { areDateShifted, areDataDifferent, refactorCountryKeys };
+module.exports = { areDateShifted, areDataDifferent, refactorCountryKeys, addDailyTests };
 
 
 /**
@@ -16,7 +16,7 @@ async function areDateShifted() {
     // 00:11 UTC because Worldometers updates data at 00:00 UTC, but APIs refreshes data every 10 minutes
     const now = new Date();
 
-    return italyData.data.todayCases !== null && now.getUTCHours() < 15;
+    return italyData.data["todayCases"] !== null && now.getUTCHours() < 15;
 }
 
 
@@ -75,4 +75,22 @@ function refactorCountryKeys(countryData, date) {
     // Rename todayRecovered to newRecovered
     countryData["dailyRecovered"] = countryData["todayRecovered"];
     delete countryData["todayRecovered"];
+}
+
+
+/**
+ * Add daily tests to country data
+ * @param countryData {JSON} - Country data from request
+ * @param yesterdayData {JSON} - Country data from DB of yesterday
+ */
+function addDailyTests(countryData, yesterdayData) {
+    const dailyTests = countryData["tests"] - yesterdayData["tests"];
+
+    // Happens when country doesn't report daily tests
+    if ((countryData['dailyCases'] > 0 || countryData['dailyCases'] === null) && dailyTests === 0) {
+        countryData['dailyTests'] = null;
+        return;
+    }
+
+    countryData['dailyTests'] = dailyTests;
 }
