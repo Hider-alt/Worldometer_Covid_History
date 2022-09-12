@@ -3,6 +3,7 @@
 require('dotenv').config();
 const { areDateShifted, areDataDifferent, refactorCountryKeys, addDailyTests } = require('./utils.js')
 
+const wakeDyno = require('woke-dyno');
 const express = require('express');
 const mongoose = require('mongoose');
 const axios = require('axios');
@@ -178,6 +179,7 @@ setInterval(updateCountries, 10 * 60 * 1000);
 
 // Listening to port
 app.listen(PORT, () => {
+    wakeDyno(process.env.DYNO_URL).start();
     console.log(`Listening to port ${PORT}`);
 });
 
