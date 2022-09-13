@@ -185,6 +185,10 @@ async function findCountry(country, projection) {
 updateCountries();
 setInterval(updateCountries, 10 * 60 * 1000);
 
+app.use((req, res) => {
+    res.status(404).send({"error": "Page not found"});
+});
+
 // Listening to port
 app.listen(PORT, () => {
     wakeDyno(process.env.DYNO_URL).start();
