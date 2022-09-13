@@ -58,6 +58,14 @@ const Covid = mongoose.model('histories', covidSchema);
 
 // -- Routes --
 
+app.get('/', redirictToDocs);
+
+app.get('/docs', redirictToDocs);
+
+function redirictToDocs(req, res) {
+    res.redirect("https://app.swaggerhub.com/apis-docs/Hider-alt/Worldometer_Covid_History/1.0.0")
+}
+
 app.get('/api/countries', async (req, res) => {
     const countries = await Covid.find({}, {_id: 0, country: 1});
 
