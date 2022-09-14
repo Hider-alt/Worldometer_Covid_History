@@ -63,7 +63,7 @@ app.get('/', redirictToDocs);
 app.get('/docs', redirictToDocs);
 
 function redirictToDocs(req, res) {
-    res.redirect("https://app.swaggerhub.com/apis-docs/Hider-alt/Worldometer_Covid_History/1.0.0")
+    res.status(301).redirect("https://app.swaggerhub.com/apis-docs/Hider-alt/Worldometer_Covid_History/1.0.0")
 }
 
 app.get('/api/countries', async (req, res) => {
@@ -75,6 +75,22 @@ app.get('/api/countries', async (req, res) => {
         countriesArray.push(country["country"]);
 
     res.send(countriesArray);
+});
+
+
+app.get('/api/countries/:country/info', async (req, res) => {
+    const country = req.params.country;
+    const data = await findCountry(country, {_id: 0, __v: 0, history: 0});
+
+    if (!data) {
+        res.status(404).send({"error": `Country ${country} not found`});
+        return;
+    }
+
+    const countryInfo = JSON.parse(JSON.stringify(data.countryInfo));
+    countryInfo.country = data.country;
+
+    res.send(countryInfo);
 });
 
 
@@ -139,22 +155,6 @@ app.get('/api/history/:country/:key', async (req, res) => {
     }
 
     res.send(customHistory);
-});
-
-
-app.get('/api/countries/:country/info', async (req, res) => {
-    const country = req.params.country;
-    const data = await findCountry(country, {_id: 0, __v: 0, history: 0});
-
-    if (!data) {
-        res.status(404).send({"error": `Country ${country} not found`});
-        return;
-    }
-
-    const countryInfo = JSON.parse(JSON.stringify(data.countryInfo));
-    countryInfo.country = data.country;
-
-    res.send(countryInfo);
 });
 
 
