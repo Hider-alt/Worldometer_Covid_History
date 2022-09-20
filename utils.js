@@ -12,11 +12,10 @@ module.exports = { areDateShifted, areDataDifferent, refactorCountryKeys, addDai
 async function areDateShifted() {
     const italyData = await axios.get('https://disease.sh/v3/covid-19/countries/Italy?allowNull=true');
 
-    // Check that now is between 00:11 UTC and 17:00 UTC
-    // 00:11 UTC because Worldometers updates data at 00:00 UTC, but APIs refreshes data every 10 minutes
     const now = new Date();
 
-    return italyData.data["todayCases"] !== null && now.getUTCHours() < 15;
+    // Also check that now is after 00:10 UTC, because data refreshes every 10 minutes, so there could be a delay
+    return italyData.data["todayCases"] !== null && now.getUTCHours() < 15 && ((now.getUTCHours() >= 0 && now.getUTCMinutes() > 10) || now.getUTCHours() > 0);
 }
 
 

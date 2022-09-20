@@ -147,6 +147,12 @@ app.get('/api/history/:country/:key', async (req, res) => {
 
     const customHistory = [];
 
+    // Check if requested key exists
+    if (data["history"][1][key] === undefined) {
+        res.status(404).send({"error": `Key ${key} not found`});
+        return;
+    }
+
     for (const day of data["history"]) {
         customHistory.push({
             date: day["date"],
