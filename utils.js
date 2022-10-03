@@ -4,8 +4,8 @@ module.exports = { areDateShifted, areDataDifferent, refactorCountryKeys, addDai
 
 
 /**
- * If Italy daily cases are not null before 15 UTC, it means that all countries data are referring to yesterday
- * (because Italy updates data about at 17 local time)
+ * If Italy daily cases are not null before 12 UTC, it means that all countries data are referring to yesterday
+ * (because Italy updates data about at 16 local time)
  *
  * @returns {Promise<boolean>}
  */
@@ -15,7 +15,7 @@ async function areDateShifted() {
     const now = new Date();
 
     // Also check that now is after 00:10 UTC, because data refreshes every 10 minutes, so there could be a delay
-    return italyData.data["todayCases"] !== null && now.getUTCHours() < 15 && ((now.getUTCHours() >= 0 && now.getUTCMinutes() > 10) || now.getUTCHours() > 0);
+    return italyData.data["todayCases"] !== null && now.getUTCHours() < 12 && ((now.getUTCHours() >= 0 && now.getUTCMinutes() > 10) || now.getUTCHours() > 0);
 }
 
 
